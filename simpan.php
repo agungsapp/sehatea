@@ -15,17 +15,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pengalaman = $_POST['pengalaman'];
     $pengalaman_detail = $_POST['pengalaman_detail'];
 
-    // Query untuk menyimpan data
-    $sql = "INSERT INTO pelamar (nama, usia, jk, pengalaman, alamat, nomor) VALUES ('$nama', '$usia', '$jk', '$pengalaman_detail', '$alamat', '$nomor')";
+    // Periksa apakah ada file yang diunggah
+    if (isset($_FILES['foto'])) {
+      $file_name = $_FILES['foto']['name'];
+      $file_size = $_FILES['foto']['size'];
+      $file_tmp = $_FILES['foto']['tmp_name'];
+      $file_type = $_FILES['foto']['type'];
 
-    // Jalankan query
-    if ($koneksi->query($sql) === TRUE) {
-      // Jika penyimpanan berhasil, kirim respons berhasil
-      $response = array("status" => "success", "message" => "Data berhasil disimpan!");
-      echo json_encode($response);
+      // Lokasi folder untuk menyimpan file
+      $upload_dir = "upload/";
+
+      // Tentukan jenis file yang diizinkan untuk diunggah
+      $allowed_extensions = array("jpg", "jpeg", "png", "gif");
+
+      $file_extension = pathinfo($file_name, PATHINFO_EXTENSION);
+
+      // Periksa apakah jenis file diizinkan
+      if (in_array($file_extension, $allowed_extensions)) {
+        // Pindahkan file yang diunggah ke folder upload
+        $upload_path = $upload_dir . $file_name;
+        move_uploaded_file($file_tmp, $upload_path);
+
+        // Tambahkan kolom foto ke dalam query SQL
+        $sql = "INSERT INTO pelamar (nama, usia, jk, pengalaman, alamat, nomor, foto) VALUES ('$nama', '$usia', '$jk', '$pengalaman_detail', '$alamat', '$nomor', '$file_name')";
+
+        // Jalankan query
+        if ($koneksi->query($sql) === TRUE) {
+          // Jika penyimpanan berhasil, kirim respons berhasil
+          $response = array("status" => "success", "message" => "Data berhasil disimpan!");
+          echo json_encode($response);
+        } else {
+          // Jika terjadi kesalahan, kirim respons gagal
+          $response = array("status" => "error", "message" => "Terjadi kesalahan saat menyimpan data: " . $koneksi->error);
+          echo json_encode($response);
+        }
+      } else {
+        // Jika jenis file tidak diizinkan, kirim respons gagal
+        $response = array("status" => "error", "message" => "Jenis file tidak diizinkan!");
+        echo json_encode($response);
+      }
     } else {
-      // Jika terjadi kesalahan, kirim respons gagal
-      $response = array("status" => "error", "message" => "Terjadi kesalahan saat menyimpan data: " . $koneksi->error);
+      // Jika file foto tidak ada, kirim respons gagal
+      $response = array("status" => "error", "message" => "File foto tidak ditemukan!");
       echo json_encode($response);
     }
   } else {

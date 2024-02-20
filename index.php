@@ -15,7 +15,8 @@
     <div class="navbar bg-base-100">
         <a class="btn btn-ghost text-xl">
             Sehatea
-            <img src="img/1.png" class="h-full rounded-full" alt="logo" /></a>
+            <img src="img/1.png" class="h-full rounded-full" alt="logo" />
+        </a>
     </div>
     <!-- navbar end -->
 
@@ -29,7 +30,7 @@
     <div class="container p-10 mx-auto">
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-                <form id="formLowongan" action="simpan.php" method="post">
+                <form id="formLowongan" action="simpan.php" method="post" enctype="multipart/form-data">
                     <h2 class="card-title mb-7">Formulir lowongan</h2>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -63,6 +64,10 @@
 
                         <textarea id="alamat" name="alamat" class="textarea textarea-success mb-5 w-full max-w-xs" required placeholder="Masukan Alamat"></textarea>
                     </div>
+
+                    <!-- upload foto -->
+                    <input type="file" id="foto" name="foto" class="file-input file-input-bordered file-input-success w-full max-w-xs" />
+
                     <!-- pengalaman -->
                     <div id="isi_pengalaman" class="form-control hidden w-full">
                         <div class="label">
@@ -87,8 +92,6 @@
 
     <script>
         $(document).ready(function() {
-
-
             // Periksa apakah status pengiriman sudah tersimpan di local storage
             var submissionStatus = localStorage.getItem('submissionStatus');
             if (submissionStatus === 'submitted') {
@@ -96,11 +99,9 @@
                 window.location.href = "terimakasih.php";
             }
 
-
             const yp = $("#y_pengalaman");
             const tp = $("#t_pengalaman");
             const boxPengalaman = $("#isi_pengalaman");
-
 
             yp.change(function() {
                 if ($(this).is(":checked")) {
@@ -131,33 +132,24 @@
         $("#formLowongan").submit(function(event) {
             event.preventDefault();
 
-            var formData = {
-                nama: $("#nama").val(),
-                usia: $("#usia").val(),
-                jk: $("select[name='jk']").val(),
-                pengalaman: $("input[name='pengalaman']:checked").val(),
-                pengalaman_detail: $("#pengalaman").val(),
-                alamat: $("#alamat").val(),
-                nomor: $("#nomor").val()
-            };
+            var formData = new FormData(this);
 
             $.ajax({
                 type: "POST",
                 url: "simpan.php",
                 data: formData,
                 dataType: "json",
+                contentType: false,
+                processData: false,
                 encode: true,
                 success: function(response) {
-                    // alert("Data berhasil disimpan!");
                     Swal.fire({
                         position: "center",
                         icon: "success",
-                        title: "Laran anda berhasil di kirimkan !",
+                        title: "Lamaran anda berhasil dikirimkan!",
                         showConfirmButton: false,
                         timer: 1500
                     });
-
-
 
                     // Reset form
                     $("#formLowongan")[0].reset();
